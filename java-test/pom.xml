@@ -18,7 +18,7 @@
         <poi.version>5.4.1</poi.version>
         <drools.version>10.1.0</drools.version>
         <antlr.version>4.13.2</antlr.version>
-        <jackson.version>2.20.0</jackson.version>
+        <jackson.version>2.20.1</jackson.version>
     </properties>
 
     <dependencies>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>77.1</version>
+            <version>78.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
