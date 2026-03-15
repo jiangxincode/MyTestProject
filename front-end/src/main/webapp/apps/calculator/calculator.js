@@ -794,7 +794,11 @@ var Calculator = (function() {
         },
         back: function() {
             var oldValue = cal.cache.showInput.innerText;
-            cal.setShowInput(oldValue.length < 2 ? "0" : oldValue.substring(0, oldValue.length - 1));
+            var newValue = oldValue.length < 2 ? "0" : oldValue.substring(0, oldValue.length - 1);
+            cal.setShowInput(newValue);
+            if (cal.type === 3) {
+                cal.showScales(newValue);
+            }
         },
         /**
          * 当计算器类型是程序员时，需要同步显示四种进制的值
