@@ -3,8 +3,14 @@
 * Ubuntu 22.04 LTS
 * JDK21
 * Tomcat 11
-* MySQL 5.7.19
+* MySQL 8.0.45
 * 数据初始化脚本 `InitDbData.sql`
+
+```shell
+# 在项目根目录下执行以下命令，编译并运行java-web-test模块
+mvn clean package -pl java-web-test
+./java-web-test/DeployWindows.ps1
+```
 
 ## TODO
 
