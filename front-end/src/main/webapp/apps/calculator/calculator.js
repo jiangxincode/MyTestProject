@@ -3,6 +3,7 @@
 window.onload = function() {
     Calculator.initCache();
     Calculator.initListeners();
+    Calculator.initKeyboard();
 };
 
 //全局计算器对象
@@ -326,6 +327,60 @@ var Calculator = (function() {
                 }
             }
 		},
+        /**
+         * 初始化键盘事件监听，支持键盘输入和粘贴
+         */
+        initKeyboard: function() {
+            // 键盘按键到内部keyCode的映射
+            var keyMap = {
+                "0": 0, "1": 1, "2": 2, "3": 3, "4": 4,
+                "5": 5, "6": 6, "7": 7, "8": 8, "9": 9,
+                ".": 10, "Enter": 12, "=": 12,
+                "+": 13, "-": 14, "*": 15, "/": 16, "%": 17,
+                "(": 21, ")": 22,
+                "Backspace": 39, "Delete": 37, "Escape": 38
+            };
+            // 程序员型16进制字母映射
+            var hexKeyMap = {
+                "a": 40, "A": 40, "b": 41, "B": 41, "c": 42, "C": 42,
+                "d": 43, "D": 43, "e": 44, "E": 44, "f": 45, "F": 45
+            };
+
+            document.addEventListener("keydown", function(e) {
+                var key = e.key;
+                var code = keyMap[key];
+
+                // 程序员型支持16进制字母
+                if (code === undefined && cal.type === 3) {
+                    code = hexKeyMap[key];
+                }
+
+                if (code !== undefined) {
+                    e.preventDefault();
+                    cal.handleKey(code);
+                }
+            });
+
+            // 支持粘贴数字表达式
+            document.addEventListener("paste", function(e) {
+                e.preventDefault();
+                var text = (e.clipboardData || window.clipboardData).getData("text").trim();
+                // 逐字符解析粘贴内容
+                var charMap = {
+                    "0": 0, "1": 1, "2": 2, "3": 3, "4": 4,
+                    "5": 5, "6": 6, "7": 7, "8": 8, "9": 9,
+                    ".": 10, "+": 13, "-": 14, "*": 15, "/": 16,
+                    "%": 17, "(": 21, ")": 22
+                };
+                for (var i = 0; i < text.length; i++) {
+                    var ch = text[i];
+                    var c = charMap[ch];
+                    if (c !== undefined) {
+                        cal.handleKey(c);
+                    }
+                }
+            });
+        },
         /**
          * 相应按键按下事件
          * @param value 按键的value值(即其keyCode)
