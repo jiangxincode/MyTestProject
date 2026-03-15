@@ -504,10 +504,26 @@ var Calculator = (function() {
                     //按位取反(~)
                     case 48:
                         cal.unaryOperate(function(si) {
-                            var result = eval("~" + si);
-                            //显示四种进制的数值
-                            cal.showScales(result);
-                            return [result];
+                            var scale = cal.currentScale, bigVal;
+                            if (scale === 16) {
+                                bigVal = BigInt("0x" + si);
+                            } else if (scale === 8) {
+                                bigVal = BigInt("0o" + si);
+                            } else if (scale === 2) {
+                                bigVal = BigInt("0b" + si);
+                            } else {
+                                bigVal = BigInt(si);
+                            }
+                            var result = ~bigVal;
+                            cal.showScales(result.toString(10));
+                            if (scale === 16) {
+                                return [result.toString(16).toUpperCase()];
+                            } else if (scale === 8) {
+                                return [result.toString(8)];
+                            } else if (scale === 2) {
+                                return [result.toString(2)];
+                            }
+                            return [result.toString(10)];
                         });
                         break;
                     //二元运算符开始
@@ -736,19 +752,37 @@ var Calculator = (function() {
                 if (cal.type === 3) {
                     var scale = cal.currentScale, fi, si;
                     if (scale === 10) {
-                        result = eval(f + op + s);
+                        fi = BigInt(f);
+                        si = BigInt(s);
                     } else if (scale === 16) {
-                        fi = parseInt(f, 16);
-                        si = parseInt(s, 16);
-                        result = eval(fi + op + si).toString(16);
+                        fi = BigInt("0x" + f);
+                        si = BigInt("0x" + s);
                     } else if (scale === 8) {
-                        fi = parseInt(f, 8);
-                        si = parseInt(s, 8);
-                        result = eval(fi + op + si).toString(8);
+                        fi = BigInt("0o" + f);
+                        si = BigInt("0o" + s);
                     } else {
-                        fi = parseInt(f, 2);
-                        si = parseInt(s, 2);
-                        result = eval(fi + op + si).toString(2);
+                        fi = BigInt("0b" + f);
+                        si = BigInt("0b" + s);
+                    }
+                    var bigResult;
+                    switch (op) {
+                        case "+": bigResult = fi + si; break;
+                        case "-": bigResult = fi - si; break;
+                        case "*": bigResult = fi * si; break;
+                        case "/": bigResult = si !== 0n ? fi / si : 0n; break;
+                        case "%": bigResult = si !== 0n ? fi % si : 0n; break;
+                        case "&": bigResult = fi & si; break;
+                        case "|": bigResult = fi | si; break;
+                        default: bigResult = fi + si;
+                    }
+                    if (scale === 10) {
+                        result = bigResult.toString(10);
+                    } else if (scale === 16) {
+                        result = bigResult.toString(16).toUpperCase();
+                    } else if (scale === 8) {
+                        result = bigResult.toString(8);
+                    } else {
+                        result = bigResult.toString(2);
                     }
                 } else {
                     result = eval(f + op + s);
@@ -819,31 +853,22 @@ var Calculator = (function() {
         calculateScales: function(num) {
             var scale = cal.currentScale,
                 result = [], i;
-            if (scale === 10) {
-                i = parseInt(num);
-                result[0] = i.toString(16);
-                result[1] = i;
+            try {
+                if (scale === 10) {
+                    i = BigInt(num);
+                } else if (scale === 16) {
+                    i = BigInt("0x" + num);
+                } else if (scale === 8) {
+                    i = BigInt("0o" + num);
+                } else {
+                    i = BigInt("0b" + num);
+                }
+                result[0] = i.toString(16).toUpperCase();
+                result[1] = i.toString(10);
                 result[2] = i.toString(8);
                 result[3] = i.toString(2);
-            } else if (scale === 16) {
-                //先转成10进制，然后再转成其它进制
-                i = parseInt(num, 16);
-                result[0] = num;
-                result[1] = i;
-                result[2] = i.toString(8);
-                result[3] = i.toString(2);
-            } else if (scale === 8) {
-                i = parseInt(num, 8);
-                result[0] = i.toString(16);
-                result[1] = i;
-                result[2] = num;
-                result[3] = i.toString(2);
-            } else {
-                i = parseInt(num, 2);
-                result[0] = i.toString(16);
-                result[1] = i;
-                result[2] = i.toString(8);
-                result[3] = num;
+            } catch (e) {
+                result = ["0", "0", "0", "0"];
             }
             return result;
         },
@@ -898,7 +923,7 @@ var Calculator = (function() {
                 } else {
                     newValue = value;
                 }
-            } else if (oldValue.length < 13) {
+            } else if (cal.type === 3 || oldValue.length < 13) {
                 if (oldValue === "0") {
                     if (value === ".") {
                         newValue = "0.";
