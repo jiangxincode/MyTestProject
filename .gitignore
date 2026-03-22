@@ -16,6 +16,10 @@ target/
 # VIM
 *.swp
 
+# Node.js
+node_modules/
+package-lock.json
+
 # Others
 tmp/
 *.idx

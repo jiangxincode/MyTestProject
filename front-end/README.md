@@ -4,6 +4,9 @@
 # 在项目根目录下执行以下命令，编译并运行front-end模块
 mvn clean package -pl front-end
 ./front-end/DeployWindows.ps1
+
+npm install
+npx vitest run
 ```
 
 ## JSCalculator
