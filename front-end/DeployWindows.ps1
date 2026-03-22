@@ -1,9 +1,13 @@
 $CURRENT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $TARGET_DIR = "$CURRENT_DIR/target"
-$RELEASE_JAR_FILE_Filter = 'front-end-*.war'
-$RELEASE_JAR_FILE = Get-ChildItem -Path "$TARGET_DIR" -Filter $RELEASE_JAR_FILE_Filter
+$ARCHIVE = "$TARGET_DIR/front-end.tar.gz"
+$REMOTE_DIR = "/var/www/html/front-end"
 
-Copy-Item $RELEASE_JAR_FILE.FullName "$TARGET_DIR/front-end.war"
+New-Item -ItemType Directory -Path $TARGET_DIR -Force | Out-Null
 
-scp "$TARGET_DIR/front-end.war" ubuntu@124.222.145.48:/usr/local/tomcat/apache-tomcat-11.0.11/webapps/
+# Pack static files, excluding dev-only files
+tar -czf $ARCHIVE -C $CURRENT_DIR --exclude="node_modules" --exclude="target" --exclude="package.json" --exclude="package-lock.json" --exclude="vitest.config.js" --exclude="*.test.js" --exclude=".git" --exclude="README.md" --exclude="DeployWindows.ps1" .
 
+scp $ARCHIVE ubuntu@124.222.145.48:/tmp/front-end.tar.gz
+
+ssh ubuntu@124.222.145.48 "rm -rf $REMOTE_DIR && mkdir -p $REMOTE_DIR && tar -xzf /tmp/front-end.tar.gz -C $REMOTE_DIR && rm /tmp/front-end.tar.gz"
