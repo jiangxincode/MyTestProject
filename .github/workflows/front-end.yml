@@ -3,10 +3,8 @@ name: Front-End CI
 on:
   push:
     branches: [ master ]
-    paths: [ 'front-end/**' ]
   pull_request:
     branches: [ master ]
-    paths: [ 'front-end/**' ]
 
 jobs:
   test:
